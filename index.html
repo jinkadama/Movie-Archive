@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movie Archive</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#111111" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1150px;
+      margin: 0 auto;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    button, input, select {
+      padding: 10px 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      background: #e50914;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.92;
+    }
+
+    input, select {
+      background: #1d1d1d;
+      color: white;
+      border: 1px solid #333;
+    }
+
+    .hidden { display: none !important; }
+
+    .auth-shell {
+      min-height: calc(100vh - 40px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: #1b1b1b;
+      border: 1px solid #2c2c2c;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    .auth-card h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .auth-sub {
+      text-align: center;
+      color: #aaa;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .auth-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .auth-switch {
+      margin-top: 14px;
+      text-align: center;
+      color: #bbb;
+      font-size: 14px;
+    }
+
+    .auth-switch a {
+      color: #fff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .error-box, .info-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    .error-box {
+      background: #3a1414;
+      color: #ffb3b3;
+      border: 1px solid #682222;
+    }
+
+    .info-box {
+      background: #162a18;
+      color: #b7f0bf;
+      border: 1px solid #295631;
+    }
+
+    .app-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .user-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .pill {
+      background: #1f1f1f;
+      border: 1px solid #333;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #ddd;
+    }
+
+    .danger-btn {
+      background: #b00020;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .import-section {
+      margin: 16px 0 24px;
+      background: #181818;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .import-top {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .import-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .section-label {
+      font-size: 13px;
+      color: #aaa;
+      margin: 18px 0 8px;
+      text-align: center;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 18px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .filter-btn {
+      background: #2a2a2a;
+      color: white;
+      border: 1px solid #3a3a3a;
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .filter-btn.active {
+      background: #e50914;
+      border-color: #e50914;
+    }
+
+    .genre-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .genre-toggle {
+      background: #2a2a2a;
+      color: white;
+      border: 1px solid #3a3a3a;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 13px;
+      min-width: 180px;
+      text-align: center;
+    }
+
+    .genre-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1b1b1b;
+      border: 1px solid #333;
+      border-radius: 12px;
+      min-width: 220px;
+      max-height: 260px;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+      z-index: 100;
+      display: none;
+      padding: 8px;
+    }
+
+    .genre-menu.show { display: block; }
+
+    .genre-option {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .genre-option:hover { background: #2c2c2c; }
+    .genre-option.active { background: #e50914; }
+
+    #sortBar {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0 22px;
+    }
+
+    #movieList,
+    #recommendationsList,
+    #importResults {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 18px;
+    }
+
+    .movie,
+    .rec-card {
+      background: #1c1c1c;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 500px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+
+    .poster-wrap,
+    .rec-poster {
+      width: 100%;
+      height: 280px;
+      background: #2b2b2b;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .poster-wrap img,
+    .rec-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .poster-fallback,
+    .rec-fallback {
+      color: #888;
+      font-size: 13px;
+      text-align: center;
+      padding: 12px;
+    }
+
+    .watched-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0,128,0,0.9);
+      color: white;
+      padding: 6px 8px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .favorite-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.75);
+      padding: 6px 8px;
+      border-radius: 999px;
+      font-size: 15px;
+    }
+
+    .movie-content,
+    .rec-content {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .movie-title,
+    .rec-title {
+      font-size: 15px;
+      font-weight: bold;
+      line-height: 1.3;
+      min-height: 38px;
+    }
+
+    .movie-meta,
+    .rec-meta {
+      color: #aaa;
+      font-size: 12px;
+      min-height: 16px;
+      line-height: 1.4;
+    }
+
+    .genre-line {
+      color: #d2d2d2;
+      font-size: 12px;
+      min-height: 30px;
+      line-height: 1.4;
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 2px;
+      margin-bottom: 2px;
+    }
+
+    .status-chip {
+      font-size: 11px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #2f2f2f;
+      color: #ddd;
+      border: 1px solid #454545;
+    }
+
+    .status-chip.active {
+      background: #e50914;
+      border-color: #e50914;
+      color: white;
+    }
+
+    .stars-block { margin-top: 4px; }
+
+    .stars-label {
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+
+    .stars {
+      position: relative;
+      display: inline-block;
+      font-size: 24px;
+      line-height: 1;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .stars-display {
+      display: flex;
+      gap: 2px;
+      letter-spacing: 1px;
+      pointer-events: none;
+    }
+
+    .star {
+      display: inline-block;
+      width: 22px;
+      text-align: center;
+      color: #555;
+    }
+
+    .star.full { color: #ffd54a; }
+
+    .star.half {
+      background: linear-gradient(to right, #ffd54a 50%, #555 50%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .star-hitbox {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 10%;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .movie-actions {
+      margin-top: auto;
+      padding-top: 8px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .secondary-btn { background: #333; }
+    .secondary-btn.active { background: #b20710; }
+
+    .delete-btn {
+      width: 100%;
+      background: #3a3a3a;
+    }
+
+    .delete-btn:hover { background: #4a4a4a; }
+
+    .empty-state {
+      text-align: center;
+      color: #aaa;
+      padding: 40px 10px;
+      grid-column: 1 / -1;
+    }
+
+    .recommendations-section {
+      margin-top: 34px;
+    }
+
+    .recommendations-section h2 {
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-content {
+      position: relative;
+      background: #1c1c1c;
+      border-radius: 14px;
+      max-width: 900px;
+      width: 100%;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    }
+
+    .modal-poster {
+      background: #2b2b2b;
+      min-height: 420px;
+    }
+
+    .modal-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-poster-fallback {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .modal-info { padding: 24px; }
+
+    .modal-title {
+      font-size: 28px;
+      margin: 0 0 10px;
+    }
+
+    .modal-meta {
+      color: #bbb;
+      font-size: 14px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .modal-rating {
+      color: #ffd54a;
+      font-size: 18px;
+      margin-bottom: 14px;
+    }
+
+    .modal-plot-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .modal-plot {
+      color: #ddd;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: none;
+      background: rgba(0,0,0,0.65);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    @media (max-width: 700px) {
+      body { padding: 14px; }
+      .top-bar, .import-controls { flex-direction: column; align-items: stretch; }
+      input, button, select { width: 100%; }
+      #movieList,
+      #recommendationsList,
+      #importResults {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .poster-wrap,
+      .rec-poster { height: 230px; }
+      .action-row { grid-template-columns: 1fr; }
+      .modal-content { grid-template-columns: 1fr; }
+      .modal-poster { min-height: 280px; }
+      .genre-menu {
+        left: 0;
+        transform: none;
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="authScreen" class="auth-shell">
+    <div class="auth-card">
+      <h1>🎬 Movie Archive</h1>
+      <div class="auth-sub">Sign in to sync your movie list across devices</div>
+
+      <div class="auth-form">
+        <input id="authEmail" type="email" placeholder="Email" />
+        <input id="authPassword" type="password" placeholder="Password" />
+        <button id="authActionBtn">Create Account</button>
+      </div>
+
+      <div class="auth-switch">
+        <span id="authSwitchText">Already have an account?</span>
+        <a id="authSwitchLink">Log in</a>
+      </div>
+
+      <div id="authError" class="error-box hidden"></div>
+      <div id="authInfo" class="info-box hidden"></div>
+    </div>
+  </div>
+
+  <div id="appScreen" class="container hidden">
+    <div class="app-header">
+      <h1>🎬 Movie Archive</h1>
+      <div class="user-bar">
+        <div id="userEmailPill" class="pill"></div>
+        <button id="logoutBtn">Log Out</button>
+        <button id="deleteAccountBtn" class="danger-btn">Delete Account</button>
+      </div>
+    </div>
+
+    <div class="top-bar">
+      <input id="title" type="text" placeholder="Enter movie title" />
+      <button id="addMovieBtn">Add Movie</button>
+      <input id="search" type="text" placeholder="Search movies..." />
+    </div>
+
+    <div class="import-section">
+      <div class="import-top">
+        <button id="openImportBtn">Import Movie</button>
+      </div>
+
+      <div id="importBox" class="hidden">
+        <div class="import-controls">
+          <input id="importSearchInput" type="text" placeholder="Search movie to import..." />
+          <button id="importSearchBtn">Search</button>
+        </div>
+        <div id="importResults" style="margin-top:16px;"></div>
+      </div>
+    </div>
+
+    <div class="section-label">Status</div>
+    <div id="statusFilters" class="filters"></div>
+
+    <div class="section-label">Genre</div>
+    <div class="filters">
+      <div class="genre-dropdown">
+        <button class="genre-toggle" id="genreToggleBtn">
+          <span id="genreToggleLabel">Genre: All</span>
+        </button>
+        <div id="genreMenu" class="genre-menu"></div>
+      </div>
+    </div>
+
+    <div id="sortBar">
+      <select id="sortSelect">
+        <option value="newest">Sort: Newest Added</option>
+        <option value="oldest">Sort: Oldest Added</option>
+        <option value="ratingHigh">Sort: Highest Rated</option>
+        <option value="ratingLow">Sort: Lowest Rated</option>
+        <option value="titleAZ">Sort: Title A-Z</option>
+        <option value="titleZA">Sort: Title Z-A</option>
+        <option value="yearNew">Sort: Year Newest</option>
+        <option value="yearOld">Sort: Year Oldest</option>
+      </select>
+    </div>
+
+    <div id="movieList"></div>
+
+    <div class="recommendations-section">
+      <h2 id="recommendationsTitle">Recommended Movies</h2>
+      <div id="recommendationsList"></div>
+    </div>
+  </div>
+
+  <div id="movieModal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModalBtn">✕</button>
+      <div class="modal-poster" id="modalPosterWrap"></div>
+      <div class="modal-info">
+        <h2 class="modal-title" id="modalTitle"></h2>
+        <div class="modal-meta" id="modalMeta"></div>
+        <div class="modal-rating" id="modalRating"></div>
+        <div class="modal-plot-title">Synopsis</div>
+        <div class="modal-plot" id="modalPlot"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut,
+      onAuthStateChanged,
+      deleteUser
+    } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      onSnapshot,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBNeYDLxAG0ArCBwkoEVwX6M3bV1WI7XyI",
+      authDomain: "movie-archive-c2b84.firebaseapp.com",
+      projectId: "movie-archive-c2b84",
+      storageBucket: "movie-archive-c2b84.firebasestorage.app",
+      messagingSenderId: "854573353090",
+      appId: "1:854573353090:web:73a9fe01fb969188848c9b"
+    };
+
+    const omdbApiKey = "bcb0b2b2";
+    const tmdbApiKey = "5ec3f7696f7a3607355f731b9171722e";
+
+    const tmdbGenreMap = {
+      "Action": 28,
+      "Adventure": 12,
+      "Animation": 16,
+      "Comedy": 35,
+      "Crime": 80,
+      "Documentary": 99,
+      "Drama": 18,
+      "Family": 10751,
+      "Fantasy": 14,
+      "History": 36,
+      "Horror": 27,
+      "Music": 10402,
+      "Mystery": 9648,
+      "Romance": 10749,
+      "Sci-Fi": 878,
+      "Science Fiction": 878,
+      "Thriller": 53,
+      "War": 10752,
+      "Western": 37
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+    let unsubscribeMovies = null;
+    let movies = [];
+    let selectedGenre = "All";
+    let selectedStatus = "All";
+    let hoverRatings = {};
+    let genreMenuOpen = false;
+    let authMode = "signup";
+
+    const authScreen = document.getElementById("authScreen");
+    const appScreen = document.getElementById("appScreen");
+    const authEmail = document.getElementById("authEmail");
+    const authPassword = document.getElementById("authPassword");
+    const authActionBtn = document.getElementById("authActionBtn");
+    const authSwitchText = document.getElementById("authSwitchText");
+    const authSwitchLink = document.getElementById("authSwitchLink");
+    const authError = document.getElementById("authError");
+    const authInfo = document.getElementById("authInfo");
+    const userEmailPill = document.getElementById("userEmailPill");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+    const addMovieBtn = document.getElementById("addMovieBtn");
+    const searchInput = document.getElementById("search");
+    const titleInput = document.getElementById("title");
+    const sortSelect = document.getElementById("sortSelect");
+    const genreToggleBtn = document.getElementById("genreToggleBtn");
+    const movieModal = document.getElementById("movieModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const recommendationsTitle = document.getElementById("recommendationsTitle");
+    const recommendationsList = document.getElementById("recommendationsList");
+    const openImportBtn = document.getElementById("openImportBtn");
+    const importBox = document.getElementById("importBox");
+    const importSearchInput = document.getElementById("importSearchInput");
+    const importSearchBtn = document.getElementById("importSearchBtn");
+    const importResults = document.getElementById("importResults");
+
+    function showAuthError(message) {
+      authError.textContent = message;
+      authError.classList.remove("hidden");
+    }
+
+    function hideAuthError() {
+      authError.classList.add("hidden");
+      authError.textContent = "";
+    }
+
+    function showAuthInfo(message) {
+      authInfo.textContent = message;
+      authInfo.classList.remove("hidden");
+    }
+
+    function hideAuthInfo() {
+      authInfo.classList.add("hidden");
+      authInfo.textContent = "";
+    }
+
+    function setAuthMode(mode) {
+      authMode = mode;
+      hideAuthError();
+      hideAuthInfo();
+
+      if (mode === "signup") {
+        authActionBtn.textContent = "Create Account";
+        authSwitchText.textContent = "Already have an account?";
+        authSwitchLink.textContent = "Log in";
+      } else {
+        authActionBtn.textContent = "Log In";
+        authSwitchText.textContent = "Need an account?";
+        authSwitchLink.textContent = "Create one";
+      }
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function parseYear(yearText) {
+      const match = String(yearText || "").match(/\d{4}/);
+      return match ? Number(match[0]) : 0;
+    }
+
+    async function fetchMovieData(title) {
+      try {
+        const exactRes = await fetch(
+          `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${omdbApiKey}`
+        );
+        const exactData = await exactRes.json();
+
+        if (exactData.Response !== "False") {
+          return exactData;
+        }
+
+        const searchRes = await fetch(
+          `https://www.omdbapi.com/?s=${encodeURIComponent(title)}&apikey=${omdbApiKey}`
+        );
+        const searchData = await searchRes.json();
+
+        if (searchData.Response !== "False" && searchData.Search?.length) {
+          const first = searchData.Search[0];
+          const detailRes = await fetch(
+            `https://www.omdbapi.com/?i=${encodeURIComponent(first.imdbID)}&apikey=${omdbApiKey}`
+          );
+          const detailData = await detailRes.json();
+          if (detailData.Response !== "False") {
+            return detailData;
+          }
+        }
+      } catch (error) {
+        console.warn("OMDb fetch failed:", error);
+      }
+      return null;
+    }
+
+    async function loadRecommendationsByGenre(genreName) {
+      recommendationsList.innerHTML = "";
+      recommendationsTitle.textContent =
+        genreName === "All" ? "Recommended Movies" : `Recommended for ${genreName}`;
+
+      if (!tmdbApiKey || genreName === "All") {
+        recommendationsList.innerHTML =
+          '<div class="empty-state">Choose a genre to see recommendations.</div>';
+        return;
+      }
+
+      const genreId = tmdbGenreMap[genreName];
+
+      if (!genreId) {
+        recommendationsList.innerHTML =
+          `<div class="empty-state">No TMDb genre match for "${genreName}".</div>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `https://api.themoviedb.org/3/discover/movie?api_key=${tmdbApiKey}&with_genres=${genreId}&sort_by=popularity.desc`
+        );
+        const data = await res.json();
+
+        console.log("TMDb recommendations response:", data);
+
+        const results = (data.results || []).slice(0, 8);
+
+        if (!results.length) {
+          recommendationsList.innerHTML =
+            '<div class="empty-state">No recommendations found.</div>';
+          return;
+        }
+
+        recommendationsList.innerHTML = results.map((movie) => {
+          const poster = movie.poster_path
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+            : "";
+
+          return `
+            <div class="rec-card">
+              <div class="rec-poster">
+                ${
+                  poster
+                    ? `<img src="${poster}" alt="${escapeHtml(movie.title)}">`
+                    : `<div class="rec-fallback">No Poster</div>`
+                }
+              </div>
+              <div class="rec-content">
+                <div class="rec-title">${escapeHtml(movie.title)}</div>
+                <div class="rec-meta">${escapeHtml(movie.release_date || "")}</div>
+              </div>
+            </div>
+          `;
+        }).join("");
+      } catch (error) {
+        console.error("TMDb recommendations failed:", error);
+        recommendationsList.innerHTML =
+          '<div class="empty-state">Could not load recommendations.</div>';
+      }
+    }
+
+    function moviesCollectionRef() {
+      return collection(db, "users", currentUser.uid, "movies");
+    }
+
+    function movieDocRef(movieId) {
+      return doc(db, "users", currentUser.uid, "movies", movieId);
+    }
+
+    async function addMovie() {
+      const rawTitle = titleInput.value.trim();
+      if (!rawTitle || !currentUser) return;
+
+      const movie = {
+        title: rawTitle,
+        year: "",
+        genre: "",
+        poster: "",
+        plot: "",
+        rating: 0,
+        watched: false,
+        favorite: false,
+        createdAt: Date.now()
+      };
+
+      const data = await fetchMovieData(rawTitle);
+      if (data) {
+        movie.title = data.Title || rawTitle;
+        movie.year = data.Year || "";
+        movie.genre = data.Genre || "";
+        movie.poster = data.Poster && data.Poster !== "N/A" ? data.Poster : "";
+        movie.plot = data.Plot && data.Plot !== "N/A" ? data.Plot : "";
+      }
+
+      await addDoc(moviesCollectionRef(), movie);
+      titleInput.value = "";
+    }
+
+    async function importMovieByImdbId(imdbID) {
+      if (!currentUser) return;
+
+      try {
+        const res = await fetch(
+          `https://www.omdbapi.com/?i=${encodeURIComponent(imdbID)}&apikey=${omdbApiKey}`
+        );
+        const data = await res.json();
+
+        if (data.Response === "False") {
+          alert("Could not import movie.");
+          return;
+        }
+
+        const movie = {
+          title: data.Title || "",
+          year: data.Year || "",
+          genre: data.Genre || "",
+          poster: data.Poster && data.Poster !== "N/A" ? data.Poster : "",
+          plot: data.Plot && data.Plot !== "N/A" ? data.Plot : "",
+          rating: 0,
+          watched: false,
+          favorite: false,
+          createdAt: Date.now()
+        };
+
+        await addDoc(moviesCollectionRef(), movie);
+        alert(`Imported: ${movie.title}`);
+      } catch (error) {
+        console.error(error);
+        alert("Import failed.");
+      }
+    }
+
+    async function searchImportMovies() {
+      const queryText = importSearchInput.value.trim();
+      if (!queryText) return;
+
+      importResults.innerHTML = `<div class="empty-state">Searching...</div>`;
+
+      try {
+        const res = await fetch(
+          `https://www.omdbapi.com/?s=${encodeURIComponent(queryText)}&apikey=${omdbApiKey}`
+        );
+        const data = await res.json();
+
+        if (data.Response === "False" || !data.Search?.length) {
+          importResults.innerHTML = `<div class="empty-state">No movies found.</div>`;
+          return;
+        }
+
+        importResults.innerHTML = data.Search.map((movie) => {
+          const poster = movie.Poster && movie.Poster !== "N/A"
+            ? `<img src="${escapeHtml(movie.Poster)}" alt="${escapeHtml(movie.Title)}">`
+            : `<div class="rec-fallback">No Poster</div>`;
+
+          return `
+            <div class="rec-card">
+              <div class="rec-poster">${poster}</div>
+              <div class="rec-content">
+                <div class="rec-title">${escapeHtml(movie.Title)}</div>
+                <div class="rec-meta">${escapeHtml(movie.Year || "")}</div>
+                <button data-import-imdb="${movie.imdbID}" style="margin-top:10px;">Import</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        importResults.querySelectorAll("[data-import-imdb]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            await importMovieByImdbId(btn.dataset.importImdb);
+          });
+        });
+      } catch (error) {
+        console.error(error);
+        importResults.innerHTML = `<div class="empty-state">Search failed.</div>`;
+      }
+    }
+
+    async function deleteMovie(id) {
+      if (!currentUser) return;
+      await deleteDoc(movieDocRef(id));
+    }
+
+    async function setRating(id, value) {
+      if (!currentUser) return;
+      const rounded = Math.max(0, Math.min(5, value));
+      delete hoverRatings[id];
+      await updateDoc(movieDocRef(id), { rating: rounded });
+    }
+
+    function previewRating(id, value) {
+      hoverRatings[id] = value;
+      renderMovies();
+    }
+
+    function clearPreview(id) {
+      delete hoverRatings[id];
+      renderMovies();
+    }
+
+    async function toggleWatched(id, currentValue) {
+      if (!currentUser) return;
+      await updateDoc(movieDocRef(id), { watched: !currentValue });
+    }
+
+    async function toggleFavorite(id, currentValue) {
+      if (!currentUser) return;
+      await updateDoc(movieDocRef(id), { favorite: !currentValue });
+    }
+
+    function getAllGenres() {
+      const genreSet = new Set();
+      movies.forEach((movie) => {
+        if (!movie.genre) return;
+        movie.genre
+          .split(",")
+          .map((g) => g.trim())
+          .filter(Boolean)
+          .forEach((g) => genreSet.add(g));
+      });
+      return Array.from(genreSet).sort((a, b) => a.localeCompare(b));
+    }
+
+    function movieMatchesGenre(movie, genre) {
+      if (genre === "All") return true;
+      if (!movie.genre) return false;
+      return movie.genre
+        .split(",")
+        .map((g) => g.trim())
+        .includes(genre);
+    }
+
+    function movieMatchesStatus(movie, status) {
+      if (status === "All") return true;
+      if (status === "Watched") return movie.watched === true;
+      if (status === "Watchlist") return movie.watched === false;
+      if (status === "Favorites") return movie.favorite === true;
+      return true;
+    }
+
+    function renderStatusFilters() {
+      const container = document.getElementById("statusFilters");
+      const statuses = ["All", "Watched", "Watchlist", "Favorites"];
+      container.innerHTML = statuses.map((status) => `
+        <button
+          class="filter-btn ${status === selectedStatus ? "active" : ""}"
+          data-status="${status}"
+        >
+          ${status}
+        </button>
+      `).join("");
+
+      container.querySelectorAll("[data-status]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selectedStatus = btn.dataset.status;
+          renderMovies();
+        });
+      });
+    }
+
+    function renderGenreMenu() {
+      const container = document.getElementById("genreMenu");
+      const genres = ["All", ...getAllGenres()];
+      document.getElementById("genreToggleLabel").textContent = `Genre: ${selectedGenre}`;
+
+      container.innerHTML = genres.map((genre) => `
+        <button
+          class="genre-option ${genre === selectedGenre ? "active" : ""}"
+          data-genre="${escapeHtml(genre)}"
+        >
+          ${escapeHtml(genre)}
+        </button>
+      `).join("");
+
+      container.classList.toggle("show", genreMenuOpen);
+
+      container.querySelectorAll("[data-genre]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          selectedGenre = btn.dataset.genre;
+          closeGenreMenu();
+          renderMovies();
+          await loadRecommendationsByGenre(selectedGenre);
+        });
+      });
+    }
+
+    function toggleGenreMenu() {
+      genreMenuOpen = !genreMenuOpen;
+      renderGenreMenu();
+    }
+
+    function closeGenreMenu() {
+      genreMenuOpen = false;
+      renderGenreMenu();
+    }
+
+    function getSortedMovies(list) {
+      const sortValue = sortSelect.value;
+      const sorted = [...list];
+
+      if (sortValue === "newest") {
+        sorted.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      } else if (sortValue === "oldest") {
+        sorted.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      } else if (sortValue === "ratingHigh") {
+        sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      } else if (sortValue === "ratingLow") {
+        sorted.sort((a, b) => (a.rating || 0) - (b.rating || 0));
+      } else if (sortValue === "titleAZ") {
+        sorted.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+      } else if (sortValue === "titleZA") {
+        sorted.sort((a, b) => (b.title || "").localeCompare(a.title || ""));
+      } else if (sortValue === "yearNew") {
+        sorted.sort((a, b) => parseYear(b.year) - parseYear(a.year));
+      } else if (sortValue === "yearOld") {
+        sorted.sort((a, b) => parseYear(a.year) - parseYear(b.year));
+      }
+
+      return sorted;
+    }
+
+    function buildStars(id, ratingValue) {
+      let html = `<div class="stars" data-star-wrap="${id}"><div class="stars-display">`;
+      for (let i = 1; i <= 5; i++) {
+        let cls = "";
+        if (ratingValue >= i) cls = "full";
+        else if (ratingValue >= i - 0.5) cls = "half";
+        html += `<span class="star ${cls}">★</span>`;
+      }
+      html += `</div>`;
+      for (let i = 0; i < 10; i++) {
+        const value = (i + 1) * 0.5;
+        const left = i * 10;
+        html += `<span class="star-hitbox" style="left:${left}%" data-rate-id="${id}" data-rate-value="${value}"></span>`;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    function openModal(id) {
+      const movie = movies.find((m) => m.id === id);
+      if (!movie) return;
+
+      const posterWrap = document.getElementById("modalPosterWrap");
+      const title = document.getElementById("modalTitle");
+      const meta = document.getElementById("modalMeta");
+      const rating = document.getElementById("modalRating");
+      const plot = document.getElementById("modalPlot");
+
+      posterWrap.innerHTML = movie.poster
+        ? `<img src="${escapeHtml(movie.poster)}" alt="${escapeHtml(movie.title)} poster">`
+        : `<div class="modal-poster-fallback">No Poster</div>`;
+
+      title.textContent = movie.title || "Untitled";
+      meta.textContent = [movie.year || "Unknown Year", movie.genre || "Uncategorized"]
+        .filter(Boolean)
+        .join(" • ");
+      rating.textContent = movie.rating > 0 ? `${movie.rating.toFixed(1)} / 5` : "No rating yet";
+      plot.textContent = movie.plot || "No synopsis available.";
+
+      movieModal.classList.add("show");
+    }
+
+    function closeModal() {
+      movieModal.classList.remove("show");
+    }
+
+    function renderMovies() {
+      renderStatusFilters();
+      renderGenreMenu();
+
+      const list = document.getElementById("movieList");
+      const search = searchInput.value.toLowerCase().trim();
+
+      let filteredMovies = movies.filter((movie) => {
+        const matchesSearch = (movie.title || "").toLowerCase().includes(search);
+        const matchesGenre = movieMatchesGenre(movie, selectedGenre);
+        const matchesStatus = movieMatchesStatus(movie, selectedStatus);
+        return matchesSearch && matchesGenre && matchesStatus;
+      });
+
+      filteredMovies = getSortedMovies(filteredMovies);
+
+      if (!filteredMovies.length) {
+        list.innerHTML = `<div class="empty-state">No movies found.</div>`;
+        return;
+      }
+
+      list.innerHTML = filteredMovies.map((movie) => {
+        const activeRating = hoverRatings[movie.id] !== undefined ? hoverRatings[movie.id] : (movie.rating || 0);
+        const posterHtml = movie.poster
+          ? `<img src="${escapeHtml(movie.poster)}" alt="${escapeHtml(movie.title)} poster">`
+          : `<div class="poster-fallback">No Poster</div>`;
+
+        const yearText = movie.year ? escapeHtml(movie.year) : "Unknown Year";
+        const genreText = movie.genre ? escapeHtml(movie.genre) : "Uncategorized";
+
+        return `
+          <div class="movie">
+            <div class="poster-wrap" data-open-modal="${movie.id}">
+              ${posterHtml}
+              ${movie.watched ? '<div class="watched-badge">✓</div>' : ""}
+              ${movie.favorite ? '<div class="favorite-badge">❤️</div>' : ""}
+            </div>
+
+            <div class="movie-content">
+              <div class="movie-title">${escapeHtml(movie.title)}</div>
+              <div class="movie-meta">${yearText}</div>
+              <div class="genre-line">${genreText}</div>
+
+              <div class="status-row">
+                <span class="status-chip ${movie.watched ? "active" : ""}">
+                  ${movie.watched ? "Watched" : "Watchlist"}
+                </span>
+                ${movie.favorite ? '<span class="status-chip active">Favorite</span>' : ""}
+              </div>
+
+              <div class="stars-block">
+                <div class="stars-label">${activeRating > 0 ? Number(activeRating).toFixed(1) + " / 5" : "No rating yet"}</div>
+                ${buildStars(movie.id, activeRating)}
+              </div>
+
+              <div class="movie-actions">
+                <div class="action-row">
+                  <button class="secondary-btn ${movie.watched ? "active" : ""}" data-watch-id="${movie.id}">
+                    Watched
+                  </button>
+                  <button class="secondary-btn ${movie.favorite ? "active" : ""}" data-fav-id="${movie.id}">
+                    Favorite
+                  </button>
+                </div>
+                <button class="delete-btn" data-delete-id="${movie.id}">Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      list.querySelectorAll("[data-open-modal]").forEach((el) => {
+        el.addEventListener("click", () => openModal(el.dataset.openModal));
+      });
+
+      list.querySelectorAll("[data-delete-id]").forEach((el) => {
+        el.addEventListener("click", () => deleteMovie(el.dataset.deleteId));
+      });
+
+      list.querySelectorAll("[data-watch-id]").forEach((el) => {
+        el.addEventListener("click", () => {
+          const movie = movies.find((m) => m.id === el.dataset.watchId);
+          if (movie) toggleWatched(movie.id, movie.watched);
+        });
+      });
+
+      list.querySelectorAll("[data-fav-id]").forEach((el) => {
+        el.addEventListener("click", () => {
+          const movie = movies.find((m) => m.id === el.dataset.favId);
+          if (movie) toggleFavorite(movie.id, movie.favorite);
+        });
+      });
+
+      list.querySelectorAll("[data-rate-id]").forEach((el) => {
+        el.addEventListener("mouseenter", (event) => {
+          event.stopPropagation();
+          previewRating(el.dataset.rateId, Number(el.dataset.rateValue));
+        });
+        el.addEventListener("click", (event) => {
+          event.stopPropagation();
+          setRating(el.dataset.rateId, Number(el.dataset.rateValue));
+        });
+      });
+
+      list.querySelectorAll("[data-star-wrap]").forEach((el) => {
+        el.addEventListener("mouseleave", () => {
+          clearPreview(el.dataset.starWrap);
+        });
+      });
+    }
+
+    function subscribeToMovies() {
+      if (!currentUser) return;
+      if (unsubscribeMovies) unsubscribeMovies();
+
+      const q = query(moviesCollectionRef(), orderBy("createdAt", "desc"));
+
+      unsubscribeMovies = onSnapshot(q, (snapshot) => {
+        movies = snapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data()
+        }));
+        renderMovies();
+      });
+    }
+
+    function showApp(user) {
+      authScreen.classList.add("hidden");
+      appScreen.classList.remove("hidden");
+      userEmailPill.textContent = user.email || "Signed in";
+    }
+
+    function showAuth() {
+      appScreen.classList.add("hidden");
+      authScreen.classList.remove("hidden");
+      closeModal();
+    }
+
+    async function handleAuthAction() {
+      hideAuthError();
+      hideAuthInfo();
+
+      const email = authEmail.value.trim();
+      const password = authPassword.value;
+
+      if (!email || !password) {
+        showAuthError("Enter both email and password.");
+        return;
+      }
+
+      try {
+        if (authMode === "signup") {
+          await createUserWithEmailAndPassword(auth, email, password);
+          showAuthInfo("Account created.");
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+        }
+      } catch (error) {
+        showAuthError(error.message || "Authentication failed.");
+      }
+    }
+
+    authActionBtn.addEventListener("click", handleAuthAction);
+
+    authSwitchLink.addEventListener("click", () => {
+      setAuthMode(authMode === "signup" ? "login" : "signup");
+    });
+
+    authPassword.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") handleAuthAction();
+    });
+
+    addMovieBtn.addEventListener("click", addMovie);
+
+    titleInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addMovie();
+    });
+
+    searchInput.addEventListener("input", renderMovies);
+    sortSelect.addEventListener("change", renderMovies);
+
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+    });
+
+    deleteAccountBtn.addEventListener("click", async () => {
+      const confirmed = confirm("Delete your account? This cannot be undone.");
+      if (!confirmed) return;
+
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        await deleteUser(user);
+        alert("Your account was deleted.");
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    openImportBtn.addEventListener("click", () => {
+      importBox.classList.toggle("hidden");
+    });
+
+    importSearchBtn.addEventListener("click", searchImportMovies);
+
+    importSearchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        searchImportMovies();
+      }
+    });
+
+    genreToggleBtn.addEventListener("click", toggleGenreMenu);
+    closeModalBtn.addEventListener("click", closeModal);
+
+    movieModal.addEventListener("click", (event) => {
+      if (event.target === movieModal) closeModal();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeModal();
+        closeGenreMenu();
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      const dropdown = document.querySelector(".genre-dropdown");
+      if (dropdown && !dropdown.contains(event.target) && genreMenuOpen) {
+        closeGenreMenu();
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+
+      if (user) {
+        showApp(user);
+        subscribeToMovies();
+        await loadRecommendationsByGenre(selectedGenre);
+      } else {
+        if (unsubscribeMovies) {
+          unsubscribeMovies();
+          unsubscribeMovies = null;
+        }
+        movies = [];
+        renderMovies();
+        showAuth();
+      }
+    });
+
+    setAuthMode("signup");
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", async () => {
+        try {
+          await navigator.serviceWorker.register("/service-worker.js");
+          console.log("Service worker registered");
+        } catch (error) {
+          console.error("Service worker registration failed:", error);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
