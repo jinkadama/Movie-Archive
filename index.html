@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Movie Archive</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#111111" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
@@ -268,11 +268,27 @@
 
     #movieList,
     #recommendationsList,
-    #importResults {
+    #importResults{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
       gap: 18px;
     }
+
+#trendingList{
+  display:flex;
+  gap:14px;
+  overflow-x:auto;
+  padding-bottom:10px;
+}
+
+#trendingList .rec-card{
+  min-width:160px;
+  flex:0 0 auto;
+}
+
+#trendingList .rec-poster{
+  height:230px;
+}
 
     .movie,
     .rec-card {
@@ -299,12 +315,18 @@
     }
 
     .poster-wrap img,
-    .rec-poster img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+.rec-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .35s ease;
+}
+
+.poster-wrap:hover img,
+.rec-poster:hover img {
+  transform: scale(1.08);
+}
 
     .poster-fallback,
     .rec-fallback {
@@ -676,7 +698,10 @@
 
     <div id="movieList"></div>
 
-    <div class="recommendations-section">
+   <div class="recommendations-section">
+  <h2>🔥 Trending Movies</h2>
+  <div id="trendingList"></div>
+</div>
       <h2 id="recommendationsTitle">Recommended Movies</h2>
       <div id="recommendationsList"></div>
     </div>
@@ -937,6 +962,57 @@
       }
     }
 
+    async function loadTrendingMovies() {
+
+  const container = document.getElementById("trendingList");
+  if(!container) return;
+
+  container.innerHTML =
+  `<div class="empty-state">Loading trending movies...</div>`;
+
+  try{
+
+    const res = await fetch(
+      `https://api.themoviedb.org/3/trending/movie/week?api_key=${tmdbApiKey}`
+    );
+
+    const data = await res.json();
+
+    const results = (data.results || []).slice(0,8);
+
+    container.innerHTML = results.map(movie=>{
+
+      const poster = movie.poster_path
+      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+      : "";
+
+      return `
+      <div class="rec-card">
+        <div class="rec-poster">
+          ${poster
+            ? `<img src="${poster}">`
+            : `<div class="rec-fallback">No Poster</div>`
+          }
+        </div>
+
+        <div class="rec-content">
+          <div class="rec-title">${escapeHtml(movie.title)}</div>
+          <div class="rec-meta">${escapeHtml(movie.release_date || "")}</div>
+        </div>
+      </div>
+      `;
+
+    }).join("");
+
+  }catch(error){
+
+    container.innerHTML =
+    `<div class="empty-state">Failed loading trending movies</div>`;
+
+  }
+
+}
+
     function moviesCollectionRef() {
       return collection(db, "users", currentUser.uid, "movies");
     }
@@ -1157,6 +1233,7 @@
           closeGenreMenu();
           renderMovies();
           await loadRecommendationsByGenre(selectedGenre);
+          await loadTrendingMovies();
         });
       });
     }
@@ -1420,7 +1497,9 @@
       if (event.key === "Enter") addMovie();
     });
 
-    searchInput.addEventListener("input", renderMovies);
+    searchInput.addEventListener("input", () => {
+  requestAnimationFrame(renderMovies);
+});
     sortSelect.addEventListener("change", renderMovies);
 
     logoutBtn.addEventListener("click", async () => {
