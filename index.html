@@ -58,6 +58,62 @@ select option:hover {
     background-color: #e50914;
 }
 
+/* --- MOBILE ONLY FIXES --- */
+@media (max-width: 600px) {
+    /* 1. Fix Navigation Layout */
+    .main-nav {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 15px !important;
+        padding: 15px 10px !important;
+    }
+
+    /* 2. Scale the Logo for small screens */
+    .nav-logo {
+        font-size: 1.1rem !important;
+        margin-bottom: 5px;
+    }
+
+    .merge-a {
+        margin-left: -5px !important; /* Adjusted merge for smaller font */
+    }
+
+    /* 3. Arrange Buttons in a clean row */
+    .nav-center {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .nav-center button, #libBurger {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        flex: 1 !important; /* Makes buttons equal width */
+        white-space: nowrap !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+    /* 4. Fix Filter Grid overlap */
+    .library-layout > div > div:first-child {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    #search {
+        grid-column: span 2 !important; /* Search takes full width */
+    }
+
+    /* 5. Poster sizing fix */
+    .poster-wrap {
+        height: auto !important;
+        aspect-ratio: 2/3 !important;
+    }
+}
+
     /* --- GUEST WARNING --- */
     #guestWarning { background: #f1c40f; color: #000; padding: 10px; text-align: center; font-size: 13px; font-weight: bold; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; gap: 15px; z-index: 1001; }
     #guestWarning button { background: #000; color: #fff; padding: 5px 10px; font-size: 11px; width: auto; }
