@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Movie Archive | Glass Edition</title>
+  <title>Movie Archive</title>
   <style>
     /* --- CORE STYLES --- */
     * { box-sizing: border-box; }
@@ -14,7 +14,50 @@
         overflow-x: hidden; position: relative;
     }
 
-    /* Background Glows from Script 2 */
+    #toastContainer {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+.toast {
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  min-width: 200px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: toastIn 0.3s ease forwards;
+}
+
+.toast.success { border-left: 4px solid #2ecc71; }
+.toast.error { border-left: 4px solid #e74c3c; }
+.toast.info { border-left: 4px solid #3498db; }
+
+@keyframes toastIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+    /* Background Glows */
     body::before, body::after {
         content: ""; position: fixed; width: 50vw; height: 50vw;
         border-radius: 50%; z-index: -1; filter: blur(120px);
@@ -24,6 +67,28 @@
     body::after { bottom: -10%; right: -10%; background: #007bff; }
 
     .hidden { display: none !important; }
+#bgCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -2; /* behind glows (-1) and content (0+) */
+}
+
+    /* --- Moving Background Animation --- */
+@keyframes floatBackground {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(40px, -30px) rotate(45deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+body::before {
+    animation: floatBackground 25s infinite ease-in-out alternate;
+}
+
+body::after {
+    animation: floatBackground 30s infinite ease-in-out alternate-reverse;
+}
+
 
     /* --- GLASS MORPHISM GLOBALS --- */
     button, input, select {
@@ -39,21 +104,21 @@
     }
     button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4); }
 
-    /* Target the dropdown container and its options */
+
 select {
-    background-color: #1a1a1a; /* Dark background for the collapsed state */
+    background-color: #1a1a1a;
     color: white;
     cursor: pointer;
 }
 
-/* Fix for the "White Box" issue in Chrome/Safari/Edge */
+
 select option {
-    background-color: #222; /* Dark background for the expanded list */
+    background-color: #222;
     color: white;
     padding: 10px;
 }
 
-/* Optional: Subtle hover effect for browsers that support it */
+
 select option:hover {
     background-color: #e50914;
 }
@@ -139,6 +204,56 @@ select option:hover {
     .star.full { color: #f1c40f; }
     .star.half::after { content: '★'; position: absolute; left: 0; width: 50%; overflow: hidden; color: #f1c40f; }
 
+
+    /* --- PROVIDER ICONS (FROM SCRIPT 2) --- */
+.provider-row {
+    display: flex; gap: 12px; margin: 15px 0;
+    padding: 12px; background: rgba(255,255,255,0.03);
+    border-radius: 12px; align-items: center; justify-content: center;
+}
+.provider-icon {
+    width: 38px; height: 38px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 22px; cursor: pointer;
+    transition: 0.3s; border: 1px solid rgba(255,255,255,0.1);
+    user-select: none;
+}
+.icon-n { background: #000; color: #e50914; border-color: #e50914; }
+.icon-p { background: #000; color: #00a8e1; border-color: #00a8e1; }
+.icon-d { background: #000; color: #00af94; border-color: #00af94; }
+.icon-h { background: #000; color: #ffffff; border-color: #ffffff; }
+
+.provider-icon.available:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px currentColor;
+}
+.provider-icon.unavailable {
+    filter: grayscale(1) opacity(0.1);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.provider-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.provider-icon:hover {
+    transform: scale(1.15);
+    box-shadow:
+        0 0 10px rgba(255,255,255,0.3),
+        0 0 20px rgba(229, 9, 20, 0.5);
+}
+
+
     /* --- ENTRANCE ANIMATION --- */
     #loader-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; display: none; justify-content: center; align-items: center; z-index: 9999; }
     #loader-layer.active { display: flex; }
@@ -159,9 +274,8 @@ select option:hover {
     .auth-shell { flex: 1; display: flex; align-items: center; justify-content: center; }
     .auth-card { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(20px); padding: 40px; border-radius: 24px; width: 100%; max-width: 400px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); }
 
-    /* --- COMPREHENSIVE MOBILE OVERRIDE --- */
 @media screen and (max-width: 600px) {
-    /* 1. Stack and Center the Navigation */
+
     .main-nav {
         flex-direction: column !important;
         height: auto !important;
@@ -170,7 +284,7 @@ select option:hover {
         align-items: center !important;
     }
 
-    /* 2. Brand Identity: Merged E + A */
+
     .nav-logo {
         width: 100% !important;
         justify-content: center !important;
@@ -180,11 +294,11 @@ select option:hover {
     }
 
     .merge-a {
-        margin-left: -7px !important; /* Forces the E and A to interlock */
+        margin-left: -7px !important;
         filter: drop-shadow(-2px 0 2px rgba(0,0,0,0.5)) !important;
     }
 
-    /* 3. Button Row (Home, Menu, Library) */
+
     .nav-center {
         display: flex !important;
         flex-direction: row !important;
@@ -196,7 +310,7 @@ select option:hover {
     .nav-center button,
     .burger-toggle,
     #logoutBtn {
-        flex: 1 !important; /* Prevents the 'My Library' cutoff seen in your screenshot */
+        flex: 1 !important;
         padding: 12px 5px !important;
         font-size: 11px !important;
         text-transform: uppercase !important;
@@ -209,7 +323,7 @@ select option:hover {
         align-items: center !important;
     }
 
-    /* 4. Hero Section & Search Bar */
+
     #homeSection {
         padding-top: 20px !important;
     }
@@ -241,10 +355,10 @@ select option:hover {
         height: 50px !important;
     }
 
-    /* 5. Dropdown Fix (No more white boxes) */
+
     select {
         background-color: #1a1a1a !important;
-        appearance: none !important; /* Removes default browser styling */
+        appearance: none !important;
         background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e") !important;
         background-repeat: no-repeat !important;
         background-position: right 10px center !important;
@@ -259,7 +373,7 @@ select option:hover {
   </style>
 </head>
 <body>
-
+<canvas id="bgCanvas"></canvas>
 <div id="loader-layer">
   <div class="intro-wrapper">
     <div id="m-part" class="letter-m">M</div>
@@ -275,6 +389,7 @@ select option:hover {
   </div>
 </div>
 
+<div id="toastContainer"></div>
 <div id="authScreen" class="auth-shell">
   <div class="auth-card">
     <h1>🎬 Movie Archive</h1>
@@ -393,7 +508,81 @@ select option:hover {
   const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app);
   let currentUser = null, movies = [], userFolders = ["All"], currentFolder = "All", authMode = "signup";
 
-  // --- LOGO ANIMATION TRIGGER ---
+  const providerLinks = {
+    8: "https://www.netflix.com/search?q=",
+    9: "https://www.amazon.com/s?k=",
+    337: "https://www.disneyplus.com/search?q=",
+    384: "https://www.max.com/search/"
+  };
+
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+  });
+
+  const glowCenters = [
+      { x: width * 0.1, y: height * 0.1, color: [229, 9, 20] },
+      { x: width * 0.9, y: height * 0.9, color: [0, 123, 255] }
+  ];
+
+  const particles = [];
+  const particleCount = 150;
+
+  for (let i = 0; i < particleCount; i++) {
+      particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 1.5 + 0.5,
+          brightness: Math.random(),
+          dx: (Math.random() - 0.5) * 0.3,
+          dy: (Math.random() - 0.5) * 0.3
+      });
+  }
+
+  function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      particles.forEach(p => {
+          p.x += p.dx;
+          p.y += p.dy;
+
+          if (p.x < 0) p.x = width;
+          if (p.x > width) p.x = 0;
+          if (p.y < 0) p.y = height;
+          if (p.y > height) p.y = 0;
+
+          p.brightness += (Math.random() - 0.5) * 0.05;
+          p.brightness = Math.max(0, Math.min(1, p.brightness));
+
+          let r = 255, g = 255, b = 255;
+          glowCenters.forEach(glow => {
+              const dx = p.x - glow.x;
+              const dy = p.y - glow.y;
+              const dist = Math.sqrt(dx*dx + dy*dy);
+              const influence = Math.min(1, 300 / (dist + 1));
+              r = r * (1 - influence) + glow.color[0] * influence;
+              g = g * (1 - influence) + glow.color[1] * influence;
+              b = b * (1 - influence) + glow.color[2] * influence;
+          });
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${p.brightness})`;
+          ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  // --- LOGO ANIMATION TRIGGER --- //
   window.triggerRefresh = () => {
     const loader = document.getElementById('loader-layer');
     loader.classList.add('active');
@@ -418,6 +607,28 @@ select option:hover {
     }, 10);
   };
 
+  // --- Toast Notification --- //
+  function showToast(message, type = "info") {
+    const container = document.getElementById("toastContainer");
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = "toastOut 0.3s ease forwards";
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  }
+
+  document.getElementById('unifiedSearchInput')
+    .addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleSearch('unifiedSearchInput', 'importResults');
+  });
+
+
   // --- NAVIGATION ---
   window.goHome = () => {
     showSection('home');
@@ -437,7 +648,7 @@ select option:hover {
   window.toggleSidebar = () => document.getElementById('folderSidebar').classList.toggle('active');
 
   // --- CYCLING TEXT ---
-  const phrases = ["Movie Archive", "Curate Your Collection.", "What's Next?", "Track Every Story.", "Rate the Classics."];
+  const phrases = ["Movie Archive", "Curate Your Collection.", "What's Next?", "Track Every Story.",   "너랑 얘기할 수 있으면 좋겠다, 리카", "Rate the Classics."];
   let phraseIdx = 0;
   setInterval(() => {
     const el = document.getElementById('heroTitle');
@@ -549,28 +760,113 @@ select option:hover {
     if(currentFolder === n) setFolder("All");
   };
 
+
+  async function getProviders(imdbID) {
+  try {
+    const f = await fetch(`https://api.themoviedb.org/3/find/${imdbID}?api_key=${tmdbApiKey}&external_source=imdb_id`);
+    const fd = await f.json();
+    const id = fd.movie_results[0]?.id;
+    if (!id) return null;
+
+    const r = await fetch(`https://api.themoviedb.org/3/movie/${id}/watch/providers?api_key=${tmdbApiKey}`);
+    const d = await r.json();
+
+    // PRIORITY: Philippines → fallback to US
+    return d.results['PH'] || d.results['US'] || null;
+
+  } catch(e) {
+    return null;
+  }
+}
+
   // --- DETAILS & STARS ---
   window.showDetails = async (title, imdbID, existingId) => {
-    const overlay = document.getElementById('movieOverlay');
-    overlay.classList.remove('hidden');
-    const queryParam = imdbID ? `i=${imdbID}` : (existingId ? `t=${encodeURIComponent(movies.find(m=>m.id===existingId).title)}` : `t=${encodeURIComponent(title)}`);
-    const res = await fetch(`https://www.omdbapi.com/?${queryParam}&apikey=${omdbApiKey}&plot=full`);
-    const data = await res.json();
-    const libM = existingId ? movies.find(m=>m.id===existingId) : movies.find(m=>m.title===data.Title);
-    const rating = libM?.userRating || 0;
+  const overlay = document.getElementById('movieOverlay');
+  overlay.classList.remove('hidden');
+  document.getElementById('overlayData').innerHTML = `<p style="text-align:center;">Fetching Details...</p>`;
 
-    document.getElementById('overlayData').innerHTML = `
-      <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">
-        <img src="${data.Poster}" style="width:180px; border-radius:10px;">
-        <div style="flex:1; min-width:250px;">
-          <h2 style="margin:0">${data.Title}</h2>
-          <p style="color:#e50914; font-weight:bold; margin:10px 0;">⭐ OMDB: ${data.imdbRating} | ${data.Year}</p>
-          ${libM ? `<div class="star-container">${[0,1,2,3,4].map(i => `<div class="star ${rating>=i+1?'full':(rating>=i+0.5?'half':'')}" onclick="setRating('${libM.id}',event,${i})"></div>`).join('')}</div>` : ''}
-          <p style="font-size:14px; opacity:0.8;">${data.Plot}</p>
-          ${libM ? `<button disabled style="width:100%; background:rgba(255,255,255,0.05);">✓ In Library</button>` : `<button onclick="importMovie('${data.imdbID}')" style="width:100%;">+ Add to Archive</button>`}
-        </div>
-      </div>`;
-  };
+  let queryParam;
+
+if (imdbID && imdbID.startsWith('tt')) {
+  queryParam = `i=${imdbID}`;
+} else if (imdbID) {
+  // TMDB ID → convert to IMDb
+  const tmdbRes = await fetch(`https://api.themoviedb.org/3/movie/${imdbID}?api_key=${tmdbApiKey}`);
+  const tmdbData = await tmdbRes.json();
+  queryParam = `i=${tmdbData.imdb_id}`;
+} else if (existingId) {
+  queryParam = `t=${encodeURIComponent(movies.find(m=>m.id===existingId).title)}`;
+} else {
+  queryParam = `t=${encodeURIComponent(title)}`;
+}
+
+  const res = await fetch(`https://www.omdbapi.com/?${queryParam}&apikey=${omdbApiKey}&plot=full`);
+  const data = await res.json();
+
+  const prov = await getProviders(data.imdbID);
+  const providers = prov?.flatrate || [];
+
+  const libM = movies.find(m => m.imdbID === data.imdbID || m.title === data.Title);
+  const rating = libM?.userRating || 0;
+
+  const ratings = data.Ratings || [];
+  const rt = ratings.find(r => r.Source === "Rotten Tomatoes")?.Value || "N/A";
+  const mc = ratings.find(r => r.Source === "Metacritic")?.Value || "N/A";
+
+  const providerHTML = providers.length > 0
+    ? providers.slice(0,4).map(p => {
+        const urlMap = {
+          8: "https://www.netflix.com/search?q=",
+          9: "https://www.amazon.com/s?k=",
+          337: "https://www.disneyplus.com/search?q=",
+          384: "https://www.max.com/search/"
+        };
+
+        const url = urlMap[p.provider_id]
+          ? urlMap[p.provider_id] + encodeURIComponent(data.Title)
+          : `https://www.google.com/search?q=${encodeURIComponent(data.Title + " " + p.provider_name)}`;
+
+        return `
+          <div class="provider-icon available"
+               onclick="window.open('${url}','_blank')"
+               title="${p.provider_name}">
+            <img src="https://image.tmdb.org/t/p/w45${p.logo_path}"
+                 style="width:70%; height:70%; object-fit:contain;">
+          </div>`;
+      }).join('')
+    : `<div style="opacity:0.5;">No streaming data</div>`;
+
+  document.getElementById('overlayData').innerHTML = `
+    <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">
+      <img src="${data.Poster}" style="width:180px; border-radius:10px;">
+      <div style="flex:1; min-width:250px;">
+        <h2 style="margin:0">${data.Title}</h2>
+
+        <div class="provider-row">${providerHTML}</div>
+
+        <p style="color:#e50914; font-weight:bold; margin:10px 0;">
+          ⭐ IMDB: ${data.imdbRating} | RT: ${rt} | MC: ${mc}
+        </p>
+
+        ${libM ? `
+        <div class="star-container">
+          ${[0,1,2,3,4].map(i =>
+            `<div class="star ${
+              rating>=i+1 ? 'full' : (rating>=i+0.5 ? 'half':'')
+            }" onclick="setRating('${libM.id}',event,${i})"></div>`
+          ).join('')}
+        </div>` : ''}
+
+        <p style="font-size:14px; opacity:0.8;">${data.Plot}</p>
+
+        ${libM
+          ? `<button disabled style="width:100%; background:rgba(255,255,255,0.05);">✓ In Library</button>`
+          : `<button onclick="importMovie('${data.imdbID}')" style="width:100%;">+ Add to Archive</button>`
+        }
+      </div>
+    </div>`;
+};
+
 
   window.setRating = async (id, e, idx) => {
     const rect = e.target.getBoundingClientRect();
@@ -580,56 +876,136 @@ select option:hover {
   };
 
   // --- SEARCH & IMPORT ---
-  const handleSearch = async (inputID, outputID) => {
-    const q = document.getElementById(inputID).value;
-    if(q.length < 3) return;
+  let searchTimeout;
+
+const handleSearch = (inputID, outputID) => {
+  clearTimeout(searchTimeout);
+
+  searchTimeout = setTimeout(async () => {
+    const q = document.getElementById(inputID).value.trim();
+    if (q.length < 3) return;
+
     const res = await fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(q)}&apikey=${omdbApiKey}`);
     const data = await res.json();
-    if(data.Search) {
-      const out = document.getElementById(outputID);
-      out.classList.remove('hidden');
-      out.innerHTML = data.Search.map(m => `
-        <div class="rec-card" onclick="showDetails('', '${m.imdbID}')">
-          <div class="poster-wrap"><img src="${m.Poster}"></div>
-          <div class="movie-content"><div class="movie-title">${m.Title}</div><button style="width:100%; font-size:11px;">View & Add</button></div>
-        </div>`).join('');
-    }
-  };
+
+    if (!data.Search) return;
+
+    const out = document.getElementById(outputID);
+    out.classList.remove('hidden');
+
+    out.innerHTML = data.Search.map(m => `
+      <div class="rec-card" onclick="showDetails('', '${m.imdbID}')">
+        <div class="poster-wrap">
+          <img src="${m.Poster !== 'N/A' ? m.Poster : ''}">
+        </div>
+        <div class="movie-content">
+          <div class="movie-title">${m.Title}</div>
+          <button style="width:100%; font-size:11px;">View & Add</button>
+        </div>
+      </div>
+    `).join('');
+  }, 400);
+};
 
   window.importMovie = async (id) => {
-    const res = await fetch(`https://www.omdbapi.com/?i=${id}&apikey=${omdbApiKey}`);
-    const d = await res.json();
-    await addDoc(moviesRef(), {
-      title: d.Title, poster: d.Poster, genre: d.Genre, createdAt: Date.now(),
-      watched: false, favorite: false, userRating: 0,
-      folder: currentFolder === "All" ? "Archive" : currentFolder
-    });
-    document.getElementById('movieOverlay').classList.add('hidden');
-  };
+  const res = await fetch(`https://www.omdbapi.com/?i=${id}&apikey=${omdbApiKey}`);
+  const d = await res.json();
+
+  await addDoc(moviesRef(), {
+    title: d.Title,
+    poster: d.Poster,
+    genre: d.Genre,
+    imdbID: d.imdbID,
+    createdAt: Date.now(),
+    watched: false,
+    favorite: false,
+    userRating: 0,
+    folder: currentFolder === "All" ? "Archive" : currentFolder
+  });
+
+  showToast("Added to Archive ✅", "success");
+  document.getElementById('movieOverlay').classList.add('hidden');
+};
 
   async function loadTrendingMovies() {
-    const res = await fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${tmdbApiKey}`);
-    const data = await res.json();
-    document.getElementById('trendingList').innerHTML = data.results.slice(0,10).map(m => `
-      <div class="trending-card" onclick="showDetails('${m.title.replace(/'/g,"")}')">
-        <img src="https://image.tmdb.org/t/p/w500${m.poster_path}">
-      </div>`).join('');
-  }
+  const res = await fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${tmdbApiKey}`);
+  const data = await res.json();
 
-  // --- LISTENERS ---
+  document.getElementById('trendingList').innerHTML = data.results.slice(0,10).map(m => `
+    <div class="trending-card" onclick="showDetails('${m.title.replace(/'/g,"")}', '${m.id}')">
+      <img src="https://image.tmdb.org/t/p/w500${m.poster_path}">
+    </div>
+  `).join('');
+}
+
+    // --- LISTENERS ---
   document.getElementById('unifiedSearchBtn').onclick = () => handleSearch('unifiedSearchInput', 'importResults');
   document.getElementById('unifiedSearchInput').oninput = () => handleSearch('unifiedSearchInput', 'importResults');
   document.getElementById('libQuickSearchBtn').onclick = () => handleSearch('libQuickSearchInput', 'libSearchResults');
 
   document.getElementById('authActionBtn').onclick = async () => {
-    const e = document.getElementById('authEmail').value, p = document.getElementById('authPassword').value;
-    try { authMode === "signup" ? await createUserWithEmailAndPassword(auth, e, p) : await signInWithEmailAndPassword(auth, e, p); } catch(err) { alert(err.message); }
-  };
-  document.getElementById('authSwitchLink').onclick = () => {
-    authMode = authMode === "signup" ? "login" : "signup";
-    document.getElementById('authActionBtn').textContent = authMode === "signup" ? "Create Account" : "Log In";
-  };
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value.trim();
+
+  if (!email || !password) {
+    showToast("Enter email & password", "error");
+    return;
+  }
+
+  try {
+    if (authMode === "signup") {
+      await createUserWithEmailAndPassword(auth, email, password);
+      showToast("Account created ✅", "success");
+    } else {
+      await signInWithEmailAndPassword(auth, email, password);
+      showToast("Logged in ✅", "success");
+    }
+  } catch (err) {
+    console.error(err);
+
+    let msg = "Login failed";
+
+    switch (err.code) {
+      case "auth/invalid-email":
+        msg = "Invalid email format";
+        break;
+      case "auth/user-not-found":
+        msg = "No account found";
+        break;
+      case "auth/wrong-password":
+        msg = "Wrong password";
+        break;
+      case "auth/email-already-in-use":
+        msg = "Email already registered";
+        break;
+      case "auth/weak-password":
+        msg = "Password should be at least 6 characters";
+        break;
+      case "auth/network-request-failed":
+        msg = "Network error (check internet)";
+        break;
+      default:
+        msg = err.message;
+    }
+
+    showToast(msg, "error");
+  }
+};
   document.getElementById('authGuestBtn').onclick = () => signInAnonymously(auth);
+  document.getElementById('authSwitchLink').onclick = () => {
+  authMode = authMode === "signup" ? "login" : "signup";
+
+  document.getElementById('authActionBtn').textContent =
+    authMode === "signup" ? "Create Account" : "Log In";
+
+  document.getElementById('authSwitchText').textContent =
+    authMode === "signup"
+      ? "Already have an account?"
+      : "Don't have an account?";
+
+  document.getElementById('authSwitchLink').textContent =
+    authMode === "signup" ? "Log in" : "Sign up";
+};
   document.getElementById('logoutBtn').onclick = () => signOut(auth);
   document.getElementById('search').oninput = renderMovies;
   document.getElementById('watchFilter').onchange = renderMovies;
@@ -643,8 +1019,8 @@ select option:hover {
   window.toggleFavorite = (id, v) => updateDoc(movieDoc(id), { favorite: !v });
   window.deleteMovie = (id) => confirm("Remove?") && deleteDoc(movieDoc(id));
   window.moveMovie = (id, folder) => updateDoc(movieDoc(id), { folder });
-
   window.addEventListener('DOMContentLoaded', triggerRefresh);
+
 </script>
 </body>
 </html>
